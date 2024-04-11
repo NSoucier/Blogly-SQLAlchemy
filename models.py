@@ -1,6 +1,7 @@
 """Models for Blogly."""
 
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -30,14 +31,35 @@ class User(db.Model):
                           nullable=True,
                           default='https://cdn-icons-png.flaticon.com/512/1053/1053244.png')
     
+    posts = db.relationship("Post", backref="user")
+                            
     def __repr__(self):
         """ Show user id, first and last name """
-        return f'id:{self.id} first:{self.first_name} last:{self.last_name}'
+        return f'<id:{self.id} first:{self.first_name} last:{self.last_name}>'
     
     def get_full_name(self):
         """ Return string of first and last name combined """
         return self.first_name + ' ' + self.last_name
     
-# user1 = User(first_name='Jack', last_name='Johnson')
-# db.session.add(user1)
-# db.session.commit()
+class Post(db.Model):
+    """ Post class"""
+    
+    __tablename__ = 'posts'
+    
+    id = db.Column(db.Integer,
+                   primary_key=True,
+                   autoincrement=True)
+    title = db.Column(db.Text,
+                      nullable=False)
+    content = db.Column(db.Text,
+                        nullable=False)
+    created_at = db.Column(db.DateTime,
+                           nullable=False,
+                           default=datetime.now())
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey('users.id'))
+        
+    def __repr__(self):
+        """ Show user_id and post title"""
+        return f'<Name:{self.user.first_name} title:{self.title}>'
+    

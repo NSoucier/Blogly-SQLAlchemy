@@ -10,4 +10,18 @@
     <button id="delete" formmethod="POST" formaction="/users/{{id}}/delete">Delete</button>
 </form>
 
+<div>
+    <h3>Posts</h3>
+    <ul id="posts">
+        {% for post in user.posts %}
+            <li><a href="/posts/{{post.id}}">{{post.title}}</a></li>
+        {% endfor %}
+
+    </ul>
+    <form action="/users/{{id}}/posts/new">
+        <button id="edit">Add Post</button>
+    </form>    
+</div>
+
+
 {% endblock %}

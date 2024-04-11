@@ -1,8 +1,9 @@
 img {
-    width: 100px;
-    height: 100px;
+    width: 160px;
+    height: 160px;
     float: left;
     padding-right: 20px;
+    padding-bottom: 100%;
 }
 
 a {
@@ -33,21 +34,21 @@ a {
 
 #cancel {
     border: 1px solid rgb(62, 162, 255);
-    background-color: rgb(255, 255, 255);
-    color: rgb(62, 162, 255);
+    background-color: rgb(62, 162, 255);
+    color: rgb(255 255 255);
     border-radius: 5px;
     padding: 7px;
+    margin-right: 5px;
     float: right;
-    position: absolute;
-    left: 215px;
 }
 
 #edit{
     all: unset;
-    background-color: rgb(39, 140, 235);
+    background-color: rgb(62, 162, 255);
     color: white;
     border-radius: 5px;
     padding: 7px;
+    margin: 2px;
     outline: none;
 }
 
@@ -60,6 +61,16 @@ a {
     outline: none;
 }
 
+#addpost {
+    border: 1px solid rgb(46, 152, 19);
+    background-color: rgb(46, 152, 19);
+    color: white;
+    border-radius: 5px;
+    padding: 7px;
+    outline: none;
+    float: right;
+}
+
 label {
     margin-bottom: 10px;
 }
@@ -68,4 +79,52 @@ input {
     margin-bottom: 20px;
     margin-top: 7px;
     width: 300px;
+}
+
+#posts {
+    position: relative;
+    left: 30px;
+}
+
+#newpostform {
+    width: 400px;
+}
+
+#posttitle {
+    float: right;
+    width: 308px;
+    height: 20px;
+}
+
+#postcontent {
+    position: relative;
+    left: 85px;
+}
+
+#content {
+    position: relative;
+    top: 20px;
+}
+
+#title {
+    position: relative;
+    top: 5px;
+}
+
+#cancelpost {
+    border: 2px solid rgb(62, 162, 255);
+    background-color: rgb(255, 255, 255);
+    color: rgb(62, 162, 255);
+    border-radius: 5px;
+    padding: 8px;
+}
+
+#canceledit {
+    border: 1px solid rgb(62, 162, 255);
+    background-color: rgb(255, 255, 255);
+    color: rgb(62, 162, 255);
+    border-radius: 5px;
+    padding: 7px;
+    margin-right: 5px;
+    float: right;
 }
