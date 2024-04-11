@@ -28,14 +28,58 @@ def create_app(database_name, testing=False):
     def show_users():
         """ Show all users """
         users = User.query.all()
-        # show in order
-        # asc_users = sorted(users)
-        return render_template('users.html', users=users)
+        asc_users = User.query.order_by(User.id).all()
+
+        return render_template('users.html', users=asc_users)
     
     @app.route('/users/new')
     def new_user_form():
         """ Show form to add new user """
         return render_template('new_user.html')
+
+    @app.route('/users/new', methods=['POST'])
+    def add_new_user():
+        """ Process new user form """
+        first = request.form['first']
+        last = request.form['last']
+        url = request.form['url']
+        
+        user = User(first_name=first, last_name=last, image_url=url)
+        db.session.add(user)
+        db.session.commit()
+        
+        return redirect('/users')
+
+    @app.route('/users/<int:user_id>')
+    def show_user(user_id):
+        """ Show information about specific user """
+        user = User.query.get(user_id)
+        return render_template('user_details.html', id=user_id, user=user)
+
+    @app.route('/users/<int:user_id>/edit')
+    def edit_user_form(user_id):
+        """ Show edit page for a user """
+        user = User.query.get(user_id)
+        return render_template('edit_user.html', id=user_id, user=user)
+
+    @app.route('/users/<int:user_id>/edit', methods=['POST'])
+    def edits_user(user_id):
+        """ Process edit form """
+        user = User.query.get(user_id)
+        user.first_name = request.form['first']
+        user.last_name = request.form['last']
+        user.image_url = request.form['url']
+        
+        db.session.add(user)
+        db.session.commit()
+        return redirect('/users')
+
+    @app.route('/users/<int:user_id>/delete', methods=['POST'])
+    def delete_user(user_id):
+        """ Deletes user """
+        User.query.filter_by(id=user_id).delete()
+        db.session.commit()
+        return redirect('/users')
     
     return app
 
@@ -77,8 +121,8 @@ if __name__ == '__main__':
 #         """ Show all users """
 #         users = User.query.all()
 #         # show in order
-#         # asc_users = sorted(users)
-#         return render_template('users.html', users=users)
+#         asc_users = User.query.order_by(User.id).all()
+#         return render_template('users.html', users=asc_users)
     
 #     @app.route('/users/new')
 #     def new_user_form():
