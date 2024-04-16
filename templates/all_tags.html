@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Tags</h2>
+<ul>
+    {% for tag in tags %}
+        <li><a href="/tags/{{tag.id}}">{{tag.name}}</a></li>
+    {% endfor %}
+</ul>
+
+<form action="/tags/new">
+    <button id="edit">Add Tag</button>
+</form>
+
+{% endblock %}

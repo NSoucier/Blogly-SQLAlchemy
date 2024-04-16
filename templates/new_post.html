@@ -10,6 +10,13 @@
  
     <label id="content" for="">Content</label>
     <textarea name="content" id="postcontent" cols="40" rows="3"></textarea> <br>
+
+    <div class="checkboxes">
+        {% for tag in tags %}
+            <input type="checkbox" name="{{tag.name}}" id="box">
+            <label for="" id="boxlabel">{{tag.name}}</label> <br>
+        {% endfor %}
+    </div>
   
     <button formaction="/users/{{id}}/posts/new" formmethod="POST" id="addpost">Add</button>
     <button formaction="/users/{{id}}" id="cancel">Cancel</button>

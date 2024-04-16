@@ -1,6 +1,83 @@
+from unittest import TestCase
+from app import create_app
+from models import db, User, connect_db
+
+class BloglyTests(TestCase):
+    """ Tests for Blogly app """
+    @classmethod
+    def setUpClass(cls):
+        """ Set up testing environment """
+        cls.app = create_app("blogly_test", testing=True)
+        cls.client = cls.app.test_client()
+
+    # Establish application context
+    with cls.app.app_context():
+        # Initialize SQLAlchemy with the Flask application instance
+        db.init_app(cls.app)
+        db.create_all()
+
+    @classmethod
+    def tearDownClass(cls):
+        """ Clean up testing environment """
+        # Drop all tables from the test database
+        with cls.app.app_context():
+            db.drop_all()
+
+    def setUp(self):
+        """ Add sample user before every test method """
+        with self.app.app_context():
+            # Create a new database session for each test
+            self.db = db.session
+            user = User(first_name='test', last_name='1', image_url='https://upload.wikimedia.org/wikipedia/commons/b/bd/Test.svg')
+            self.db.add(user)
+            self.db.commit()
+
+            self.user_id = user.id
+
+    def tearDown(self):
+        """ Clean up any fouled transaction after every test method """
+        # Rollback the current transaction to clean up the database state
+        # self.db.rollback()
+        with self.app.app_context():
+            User.query.delete()
+            self.db.commit()
+
+    def test_show_users(self):
+        """ Check to see if user is displayed in list """
+        resp = self.client.get("/users")
+        html = resp.get_data(as_text=True)
+        print(html, "*************************")
+        self.assertEqual(resp.status_code, 200)
+        # self.assertIn('Firstname Lastname', html)
+        
+    def test_show_user_details(self):
+        """ Check to see if user details is displayed """
+        resp = self.client.get(f"/users/{self.user_id}")
+        html = resp.get_data(as_text=True)
+        self.assertEqual(resp.status_code, 200)
+        # self.assertIn('Firstname Lastname', html)
+
+    def test_show_edit_user(self):
+        """ Check to see if user is populated on 'edit user' page """
+        resp = self.client.get(f"/users/{self.user_id}/edit")
+        html = resp.get_data(as_text=True)
+        self.assertEqual(resp.status_code, 200)
+        # self.assertIn('Firstname', html)
+
+    def test_delete_user(self):
+        """ Check to see if user is deleted from db """
+        post = self.client.post(f"/users/{self.user_id}/delete")
+        resp = self.client.get('/users')
+        html = resp.get_data(as_text=True)
+        self.assertEqual(resp.status_code, 200)
+        # self.assertNotIn('Firstname', html)
+
+#############################################################################################
+# """Blogly application."""
+# adapted to match JesseB's structure since I needed to create another instance of the app for testing (description saved in slack DMs)
 
 from flask import Flask, request, redirect, render_template
-from models import db, connect_db, User, Post, Tag, PostTag
+from .models import db, connect_db, User
 
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -12,31 +89,21 @@ def create_app(database_name, testing=False):
     app.config['SECRET_KEY'] = "secret"
     app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
     if testing:
-        app.config["WTF_CSRF_ENABLED"] = False
+    app.config["WTF_CSRF_ENABLED"] = False
 
     debug = DebugToolbarExtension(app)
-    
     @app.route('/')
     def show_home():
-        """ Show 5 most recent posts """
-        posts = Post.query.order_by(Post.id.desc()).limit(5).all()
-        return render_template('all_posts.html', posts=posts)
+        """ Redirect to list of users """
+        return redirect('/users')
     
-    @app.errorhandler(404)
-    def page_not_found(e):
-        """ Show error 404 page """
-
-        return render_template('404.html'), 404
-
-    ################ Section for handling users ################
-
     @app.route('/users')
     def show_users():
         """ Show all users """
         users = User.query.all()
         asc_users = User.query.order_by(User.id).all()
 
-        return render_template('all_users.html', users=asc_users)
+        return render_template('users.html', users=asc_users)
     
     @app.route('/users/new')
     def new_user_form():
@@ -48,8 +115,7 @@ def create_app(database_name, testing=False):
         """ Process new user form """
         first = request.form['first']
         last = request.form['last']
-        url = request.form['url'] or None
-        
+        url = request.form['url']
         user = User(first_name=first, last_name=last, image_url=url)
         db.session.add(user)
         db.session.commit()
@@ -74,7 +140,6 @@ def create_app(database_name, testing=False):
         user.first_name = request.form['first']
         user.last_name = request.form['last']
         user.image_url = request.form['url']
-        
         db.session.add(user)
         db.session.commit()
         return redirect('/users')
@@ -82,27 +147,17 @@ def create_app(database_name, testing=False):
     @app.route('/users/<int:user_id>/delete', methods=['POST'])
     def delete_user(user_id):
         """ Deletes user """
-        posts = Post.query.filter_by(user_id=user_id).all()
-        for post in posts:
-            PostTag.query.filter_by(post_id=post.id).delete()
-
-        Post.query.filter_by(user_id=user_id).delete() # delete users posts and commit first (couldn't get cascade working)
-        db.session.commit()
-
         User.query.filter_by(id=user_id).delete()
         db.session.commit()
         return redirect('/users')
-    
-    ################ Section handling posts ################
     
     @app.route('/users/<int:user_id>/posts/new')
     def new_post_form(user_id):
         """ Show form to add post for that user """
         user = User.query.get_or_404(user_id)
         name = user.get_full_name()
-        tags = Tag.query.order_by(Tag.id).all()
 
-        return render_template('new_post.html', id=user_id, name=name, tags=tags)
+        return render_template('new_post.html', id=user_id, name=name)
     
     @app.route('/users/<int:user_id>/posts/new', methods=['POST'])
     def create_new_post(user_id):
@@ -112,13 +167,6 @@ def create_app(database_name, testing=False):
         post = Post(title=title, content=content, user_id=user_id)
         db.session.add(post)
         db.session.commit()
-        
-        for key in request.form: # checks if any tags were added to the post
-            if Tag.query.filter_by(name=key).all():
-                postTag = PostTag(post_id=post.id, tag_id=Tag.query.filter_by(name=key).first().id)
-                db.session.add(postTag)
-        db.session.commit()
-        
         return redirect(f'/users/{user_id}')
     
     @app.route('/posts/<int:post_id>')
@@ -132,9 +180,7 @@ def create_app(database_name, testing=False):
     def edit_post_form(post_id):
         """ Show form to edit a post """
         post = Post.query.get_or_404(post_id)
-        tags = Tag.query.order_by(Tag.id).all()
-        
-        return render_template('edit_post.html', post=post, tags=tags)
+        return render_template('edit_post.html', post=post)
 
     @app.route('/posts/<int:post_id>/edit', methods=['POST'])
     def edit_post(post_id):
@@ -142,16 +188,8 @@ def create_app(database_name, testing=False):
         post = Post.query.get_or_404(post_id)
         post.title = request.form['title']
         post.content = request.form['content']
-        
-        PostTag.query.filter_by(post_id=post_id).delete()
-        for key in request.form: # checks if any tags were added to the post
-            if Tag.query.filter_by(name=key).all():
-                postTag = PostTag(post_id=post_id, tag_id=Tag.query.filter_by(name=key).first().id)
-                db.session.add(postTag)
-        
         db.session.add(post)
         db.session.commit()
-        
         return redirect(f'/posts/{post_id}') 
     
     @app.route('/posts/<int:post_id>/delete', methods=['POST'])
@@ -159,65 +197,16 @@ def create_app(database_name, testing=False):
         """ Deletes post """
         post = Post.query.get_or_404(post_id)
         user_id = post.user.id
-        PostTag.query.filter_by(post_id=post_id).delete()
         Post.query.filter_by(id=post_id).delete()
         db.session.commit()
         return redirect(f'/users/{user_id}') 
 
-    ################ Section for handling tags ################
-    
-    @app.route('/tags')
-    def show_all_tags():
-        """ List all tags """
-        tags = Tag.query.order_by(Tag.id).all()
-        return render_template('all_tags.html', tags=tags)
-    
-    @app.route('/tags/<int:tag_id>')
-    def show_tag_posts(tag_id):
-        """ Shows tag with related posts """
-        tag = Tag.query.get_or_404(tag_id)
-        return render_template('tag.html', tag=tag)
-    
-    @app.route('/tags/new')
-    def new_tag_form():
-        """ Shows form to add a new tag """
-        return render_template('new_tag.html')
-    
-    @app.route('/tags/new', methods=['POST'])
-    def create_tag():
-        """ Handles new tag form """
-        tag = Tag(name=request.form['tagname'])
-        db.session.add(tag)
-        db.session.commit()
-        return redirect('/tags')
-    
-    @app.route('/tags/<int:tag_id>/edit')
-    def edit_tag_form(tag_id):
-        """ Shows form to edit tag """
-        tag = Tag.query.get_or_404(tag_id)
-        return render_template('edit_tag.html', tag=tag)
-    
-    @app.route('/tags/<int:tag_id>/edit', methods=['POST'])
-    def edit_tag(tag_id):
-        """ Handles edit tag form submission """
-        tag = Tag.query.get_or_404(tag_id)
-        tag.name = request.form['tagname']
-        db.session.add(tag)
-        db.session.commit()
-        return redirect(f'/tags/{tag_id}')
-    
-    @app.route('/tags/<int:tag_id>/delete', methods=['POST'])
-    def delete_tag(tag_id):
-        """ Deletes tag """
-        PostTag.query.filter_by(tag_id=tag_id).delete() # delete post-tag relationship first to avoid integrity error
-        db.session.commit()
-        Tag.query.filter_by(id=tag_id).delete()
-        db.session.commit()
-        
-        return redirect('/tags')   
-
     return app
 
 
+# if __name__ == '__main__':
 app = create_app(database_name='blogly', testing= False) # Here we are creating an instance of "app"
 connect_db(app) # We call "connect_db(app)" here
+# app.run(debug=True)
+
+###########################

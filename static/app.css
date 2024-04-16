@@ -1,15 +1,4 @@
-img {
-    width: 160px;
-    height: 160px;
-    float: left;
-    padding-right: 20px;
-    padding-bottom: 100%;
-}
-
-a {
-    color: rgb(0, 136, 255);
-    text-decoration: none;
-}
+/*  BUTTONS/TAGS  */
 
 #add {
     all: unset;
@@ -71,48 +60,8 @@ a {
     float: right;
 }
 
-label {
-    margin-bottom: 10px;
-}
-
-input {
-    margin-bottom: 20px;
-    margin-top: 7px;
-    width: 300px;
-}
-
-#posts {
-    position: relative;
-    left: 30px;
-}
-
-#newpostform {
-    width: 400px;
-}
-
-#posttitle {
-    float: right;
-    width: 308px;
-    height: 20px;
-}
-
-#postcontent {
-    position: relative;
-    left: 85px;
-}
-
-#content {
-    position: relative;
-    top: 20px;
-}
-
-#title {
-    position: relative;
-    top: 5px;
-}
-
 #cancelpost {
-    border: 2px solid rgb(62, 162, 255);
+    border: 1px solid rgb(62, 162, 255);
     background-color: rgb(255, 255, 255);
     color: rgb(62, 162, 255);
     border-radius: 5px;
@@ -127,4 +76,105 @@ input {
     padding: 7px;
     margin-right: 5px;
     float: right;
+}
+
+.tags {
+    border: 1px solid rgb(62, 162, 255);
+    background-color: rgb(62, 162, 255);
+    color: white;
+    border-radius: 5px;
+    padding: 1px 5px;
+}
+
+/*  FORM ELEMENTS  */
+
+label {
+    margin-bottom: 10px;
+}
+
+input {
+    margin-bottom: 20px;
+    margin-top: 7px;
+    width: 300px;
+}
+
+#newpostform {
+    width: 400px;
+}
+
+#first, #last, #url {
+    width: 393px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+}
+
+#posttitle {
+    float: right;
+    width: 307px;
+    height: 20px;
+}
+
+#postcontent {
+    position: relative;
+    left: 86px;
+}
+
+#box {
+    width:10px;
+    margin: 5px;
+}
+
+/*  OTHER ELEMENTS  */
+
+img {
+    width: 160px;
+    height: 160px;
+    float: left;
+    padding-right: 20px;
+    padding-bottom: 100%;
+}
+
+a {
+    color: rgb(0, 136, 255);
+    text-decoration: none;
+}
+#posts {
+    position: relative;
+    left: 30px;
+}
+
+#content {
+    position: relative;
+    top: 20px;
+}
+
+#title {
+    position: relative;
+    top: 5px;
+}
+
+hr.post {
+    border-top: 1px dotted rgba(0, 149, 255, 0.147);
+}
+
+h4 {
+    position: absolute;
+    right: 102px;
+    top: 15px;
+}
+
+#alltags {
+    position: absolute;
+    right: 45px;
+    top: 15px;
+}
+
+.error404 {
+    text-align: center;
+}
+
+.error {
+    text-align: center;
+    font-size: 10rem;
+    color: pink;
 }

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>{{tag.name}}</h2>
+
+{% if tag.posts %}
+    <ul>
+        {% for post in tag.posts %}
+            <li><a href="/posts/{{post.id}}">{{post.title}}</a></li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No posts are using this tag.</p>
+{% endif %}
+
+<form>
+    <button id="edit" formaction="/tags/{{tag.id}}/edit">Edit</button>
+    <button id="delete" formmethod="POST" formaction="/tags/{{tag.id}}/delete">Delete</button>
+</form>
+
+{% endblock %}

@@ -7,7 +7,7 @@ db = SQLAlchemy()
 
 
 def connect_db(app):
-    """Connect to database."""
+    """ Connect to database """
     
     with app.app_context():
         db.app = app
@@ -15,7 +15,7 @@ def connect_db(app):
         db.create_all()
 
 class User(db.Model):
-    """User class"""
+    """ User class """
     
     __tablename__ = 'users'
     
@@ -25,13 +25,12 @@ class User(db.Model):
     first_name = db.Column(db.String(15),
                            nullable=False)
     last_name = db.Column(db.String(15),
-                           nullable=False,
-                           unique=True)    
-    image_url = db.Column(db.String,
-                          nullable=True,
-                          default='https://cdn-icons-png.flaticon.com/512/1053/1053244.png')
+                           nullable=False)
+    image_url = db.Column(db.Text,
+                          nullable=False,
+                          default="https://cdn-icons-png.flaticon.com/512/1053/1053244.png")
     
-    posts = db.relationship("Post", backref="user")
+    posts = db.relationship("Post", backref="user") # tried adding this in, but still got integrity error (cascade="all, delete-orphan")
                             
     def __repr__(self):
         """ Show user id, first and last name """
@@ -42,7 +41,7 @@ class User(db.Model):
         return self.first_name + ' ' + self.last_name
     
 class Post(db.Model):
-    """ Post class"""
+    """ Post class """
     
     __tablename__ = 'posts'
     
@@ -58,8 +57,40 @@ class Post(db.Model):
                            default=datetime.now())
     user_id = db.Column(db.Integer,
                         db.ForeignKey('users.id'))
+    
+    tags = db.relationship('Tag', secondary='posts_tags', backref='posts')
         
     def __repr__(self):
-        """ Show user_id and post title"""
+        """ Show user first name and post title"""
         return f'<Name:{self.user.first_name} title:{self.title}>'
+    
+class Tag(db.Model):
+    """ Tag class """
+    
+    __tablename__ = 'tags'
+    
+    id = db.Column(db.Integer,
+                   primary_key=True, 
+                   autoincrement=True)
+    name = db.Column(db.Text,
+                     unique=True,
+                     nullable=False)
+    
+    def __repr__(self):
+        """ Show name of tag """
+        return f'<Tag:{self.name}>'
+    
+class PostTag(db.Model):
+    """ Mapping of a post to a tag """
+    
+    __tablename__ = 'posts_tags'
+    
+    post_id = db.Column(db.Integer,
+                        db.ForeignKey('posts.id'),
+                        primary_key=True)
+    tag_id = db.Column(db.Integer,
+                       db.ForeignKey('tags.id'),
+                       primary_key=True)
+    
+    
     
